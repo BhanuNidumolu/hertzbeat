@@ -1120,6 +1120,7 @@ metrics:
     fields:
       - field: id
         type: 1
+
         label: true
         i18n:
           zh-CN: ID
@@ -1167,6 +1168,72 @@ metrics:
       timeout: ^_^timeout^_^
       queryType: multiRow
       sql: select sql_text, start_time, db, query_time from mysql.slow_log;
+      url: ^_^url^_^
+      sshTunnel:
+        enable: ^_^enableSshTunnel^_^
+        host: ^_^sshHost^_^
+        port: ^_^sshPort^_^
+        timeout: ^_^sshTimeout^_^
+        username: ^_^sshUsername^_^
+        password: ^_^sshPassword^_^
+        privateKey: ^_^sshPrivateKey^_^
+        privateKeyPassphrase: ^_^sshPrivateKeyPassphrase^_^
+        shareConnection: ^_^sshShareConnection^_^
+  - name: account_expiry
+    priority: 14
+    i18n:
+      zh-CN: 账号过期信息
+      en-US: Account Expiry Info
+      ja-JP: アカウント有効期限
+    fields:
+      - field: user
+        type: 1
+        label: true
+        i18n:
+          zh-CN: 用户
+          en-US: User
+          ja-JP: ユーザー
+      - field: host
+        type: 1
+        label: true
+        i18n:
+          zh-CN: 主机
+          en-US: Host
+          ja-JP: ホスト
+      - field: days_left
+        type: 0
+        unit: day
+        i18n:
+          zh-CN: 剩余天数
+          en-US: Days Left
+          ja-JP: 残り日数
+    protocol: jdbc
+    jdbc:
+      host: ^_^host^_^
+      port: ^_^port^_^
+      platform: mysql
+      username: ^_^username^_^
+      password: ^_^password^_^
+      database: mysql
+      timeout: ^_^timeout^_^
+      queryType: multiRow
+      sql: |
+        SELECT
+          user,
+          host,
+          CASE
+            WHEN password_lifetime IS NOT NULL AND password_last_changed IS NOT NULL THEN
+              DATEDIFF(
+                DATE_ADD(password_last_changed, INTERVAL password_lifetime DAY),
+                NOW()
+              )
+            WHEN password_expired = 'Y' THEN
+              0
+            ELSE
+              -1
+          END AS days_left
+        FROM mysql.user;
+
       url: ^_^url^_^
       sshTunnel:
         enable: ^_^enableSshTunnel^_^
