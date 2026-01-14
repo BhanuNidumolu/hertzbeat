@@ -1222,15 +1222,15 @@ metrics:
           user,
           host,
           CASE
-            WHEN password_lifetime IS NOT NULL AND password_last_changed IS NOT NULL THEN
+            WHEN password_expired = 'Y' THEN
+              -1
+            WHEN password_lifetime IS NULL THEN
+              NULL
+            ELSE
               DATEDIFF(
                 DATE_ADD(password_last_changed, INTERVAL password_lifetime DAY),
                 NOW()
               )
-            WHEN password_expired = 'Y' THEN
-              0
-            ELSE
-              -1
           END AS days_left
         FROM mysql.user;
 
